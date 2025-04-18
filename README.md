@@ -23,3 +23,28 @@ A sleek, responsive typing speed tester built using **HTML**, **CSS (Tailwind)**
 ```bash
 git clone https://github.com/yourusername/typing-speed-tester.git
 cd typing-speed-tester
+2. Open in browser
+Just open TST3.html in your preferred browser. No build steps or dependencies required!
+
+🛠️ Built With
+Tailwind CSS
+
+Vanilla JavaScript
+
+HTML5
+
+📂 File Structure
+typing-speed-tester/
+│
+├── TST3.html         # Main application file
+├── README.md         # Project overview
+└── preview.png       # Screenshot (optional)
+✨ Contributing
+Feel free to fork the repo, improve the project, and make a pull request. Contributions are welcome!
+
+📄 License
+This project is open-source and available under the MIT License.
+
+👨‍💻 Author
+Yash Subhash Sawant (@yssawant_____03)
+“Practice typing to improve your speed and accuracy.” 🚀
