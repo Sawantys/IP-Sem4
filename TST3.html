@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Typing Speed Tester</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body { transition: background 0.3s ease-in-out; }
+    .incorrect { color: red; }
+    .correct { color: green; }
+    .dark-mode { background: #1a202c; color: white; }
+    .animated-text { animation: fadeIn 0.5s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .progress-bar {
+      height: 10px;
+      background: lightgray;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    .progress { height: 100%; width: 0; background: green; transition: width 0.3s; }
+  </style>
+</head>
+<body class="bg-gradient-to-r from-blue-400 to-purple-500 flex flex-col items-center justify-center min-h-screen text-gray-900">
+  <h1 class="text-4xl font-bold mb-4 text-white">Typing Speed Tester</h1>
+  <button id="toggle-mode" class="absolute top-5 right-5 bg-gray-800 text-white px-4 py-2 rounded">Dark Mode</button>
+  <div class="bg-white p-6 rounded-lg shadow-lg w-3/4 transition-all">
+    <p id="text-to-type" class="text-lg mb-4 animated-text">Loading text...</p>
+    <div class="progress-bar"><div class="progress" id="progress"></div></div>
+    <input type="text" id="input-box" class="w-full p-2 border rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Start typing here..." />
+    <div class="flex justify-between items-center">
+      <p>Time: <span id="timer">0</span>s</p>
+      <p>WPM: <span id="wpm">0</span></p>
+      <button id="restart-btn" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Restart</button>
+    </div>
+    <h2 class="mt-4 text-lg font-semibold">Leaderboard</h2>
+    <ul id="leaderboard" class="list-disc pl-5"></ul>
+  </div>
+  <script>
+    const texts = [
+      "The quick brown fox jumps over the lazy dog.",
+      "JavaScript is a versatile programming language for the web.",
+      "HTML and CSS are essential for creating beautiful websites.",
+      "Practice typing to improve your speed and accuracy.",
+      "Technology is evolving at an unprecedented pace.",
+      "Typing efficiency can save time and increase productivity.",
+      "The importance of effective communication cannot be overstated in today's fast-paced world. Whether through emails, reports, or instant messages, being able to express oneself clearly and quickly is invaluable. Typing proficiency plays a crucial role in ensuring that communication is seamless and professional.",
+      "Learning to type efficiently can save time and increase productivity. Proper hand placement on the keyboard and consistent practice are key to mastering this skill. Many people find that touch typing allows them to focus more on their ideas and less on the mechanics of typing",
+      "Technology is evolving at an unprecedented pace, reshaping the way we live, work, and communicate. From smartphones to artificial intelligence, innovations are continuously being developed. As the digital world expands, the need for quick and accurate typing has become more essential than ever before.",
+      "The quick brown fox jumps over the lazy dog. This sentence contains every letter in the English alphabet, making it a popular choice for testing keyboards and typing skills. Typing speed is measured in words per minute, and practicing regularly can help improve both speed and accuracy.",
+      "HTML and CSS are essential for creating beautiful websites."
+    ];
+
+    let currentText = "";
+    let timerInterval;
+    let startTime;
+    const textToType = document.getElementById('text-to-type');
+    const inputBox = document.getElementById('input-box');
+    const timer = document.getElementById('timer');
+    const wpm = document.getElementById('wpm');
+    const progressBar = document.getElementById('progress');
+    const leaderboard = document.getElementById('leaderboard');
+
+    function loadText() {
+      currentText = texts[Math.floor(Math.random() * texts.length)];
+      textToType.innerHTML = `<span class='animated-text'>${currentText}</span>`;
+      inputBox.value = '';
+      timer.textContent = '0';
+      wpm.textContent = '0';
+      progressBar.style.width = '0%';
+    }
+
+    function startTimer() {
+      startTime = new Date();
+      timerInterval = setInterval(() => {
+        const elapsed = Math.floor((new Date() - startTime) / 1000);
+        timer.textContent = elapsed;
+        const wordsTyped = inputBox.value.split(' ').length;
+        wpm.textContent = Math.floor((wordsTyped / elapsed) * 60) || 0;
+      }, 1000);
+    }
+
+    function updateProgress() {
+      const typedText = inputBox.value;
+      progressBar.style.width = `${(typedText.length / currentText.length) * 100}%`;
+    }
+
+    function saveScore(score) {
+      let scores = JSON.parse(localStorage.getItem('typingScores')) || [];
+      scores.push(score);
+      scores = scores.sort((a, b) => b - a).slice(0, 5);
+      localStorage.setItem('typingScores', JSON.stringify(scores));
+      displayLeaderboard(scores);
+    }
+
+    function displayLeaderboard(scores) {
+      leaderboard.innerHTML = '';
+      scores.forEach(score => {
+        const li = document.createElement('li');
+        li.textContent = `${score} WPM`;
+        leaderboard.appendChild(li);
+      });
+    }
+
+    inputBox.addEventListener('input', () => {
+      if (!timerInterval) startTimer();
+      updateProgress();
+      const typedText = inputBox.value;
+      let displayed = '';
+      for (let i = 0; i < currentText.length; i++) {
+        if (i < typedText.length) {
+          displayed += typedText[i] === currentText[i] ? `<span class='correct'>${currentText[i]}</span>` : `<span class='incorrect'>${currentText[i]}</span>`;
+        } else {
+          displayed += currentText[i];
+        }
+      }
+      textToType.innerHTML = displayed;
+      if (typedText === currentText) {
+        clearInterval(timerInterval);
+        saveScore(parseInt(wpm.textContent));
+      }
+    });
+
+    document.getElementById('restart-btn').addEventListener('click', () => {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      loadText();
+    });
+
+    document.getElementById('toggle-mode').addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+    });
+
+    window.onload = () => {
+      loadText();
+      displayLeaderboard(JSON.parse(localStorage.getItem('typingScores')) || []);
+    };
+  </script>
+</body>
+</html>
